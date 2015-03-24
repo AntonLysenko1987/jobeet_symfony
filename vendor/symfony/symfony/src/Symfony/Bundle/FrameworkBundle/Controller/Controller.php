@@ -359,4 +359,5 @@ class Controller extends ContainerAware
 
         return $this->container->get('security.csrf.token_manager')->isTokenValid(new CsrfToken($id, $token));
     }
+
 }

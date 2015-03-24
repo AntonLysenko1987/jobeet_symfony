@@ -41,12 +41,14 @@ class JobController extends Controller
      */
     public function createAction(Request $request)
     {
-        $entity = new Job();
-        $form = $this->createCreateForm($entity);
-        $form->handleRequest($request);
+        $entity  = new Job();
+        $request = $this->getRequest();
+        $form    = $this->createForm(new JobType(), $entity)->add('submit', 'submit');
+        $form->bind($request);
 
         if ($form->isValid()) {
-            $em = $this->getDoctrine()->getManager();
+            $em = $this->getDoctrine()->getEntityManager();
+
             $em->persist($entity);
             $em->flush();
 
@@ -60,7 +62,7 @@ class JobController extends Controller
 
         return $this->render('EnsJobeetBundle:Job:new.html.twig', array(
             'entity' => $entity,
-            'form'   => $form->createView(),
+            'form'   => $form->createView()
         ));
     }
 
