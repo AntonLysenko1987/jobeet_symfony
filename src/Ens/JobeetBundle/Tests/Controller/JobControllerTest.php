@@ -4,6 +4,8 @@ use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
 
 class JobControllerTest extends WebTestCase
 {
+    private $client;
+
     public function getMostRecentProgrammingJob()
     {
         $kernel = static::createKernel();
@@ -71,10 +73,10 @@ class JobControllerTest extends WebTestCase
 //    }
     public function testJobForm()
     {
-        $client = static::createClient();
-        $client->followRedirects();
-        $crawler = $client->request('GET', '/job/new');
-        $this->assertEquals('Ens\JobeetBundle\Controller\JobController::newAction', $client->getRequest()->attributes->get('_controller'));
+        $this -> client = static::createClient();
+        $this->client->followRedirects(true);
+        $crawler = $this->client->request('GET', '/job/new');
+        $this->assertEquals('Ens\JobeetBundle\Controller\JobController::newAction', $this->client->getRequest()->attributes->get('_controller'));
 
         $form = $crawler->selectButton('Preview your job')->form(array(
             'job[company]'      => 'Sensio Labs',
@@ -88,11 +90,11 @@ class JobControllerTest extends WebTestCase
             'job[is_public]'    => false,
         ));
 
-        $client->submit($form);
-        $this->assertEquals('Ens\JobeetBundle\Controller\JobController::createAction', $client->getRequest()->attributes->get('_controller'));
+        $crawler=$this->client->submit($form);
+        $this->assertEquals('Ens\JobeetBundle\Controller\JobController::createAction', $this->client->getRequest()->attributes->get('_controller'));
 
-        $client->followRedirect();
-        $this->assertEquals('Ens\JobeetBundle\Controller\JobController::previewAction', $client->getRequest()->attributes->get('_controller'));
+        //$crawler=$this->client->followRedirect();
+        $this->assertEquals('Ens\JobeetBundle\Controller\JobController::previewAction', $this->client->getRequest()->attributes->get('_controller'));
 
     }
 }
