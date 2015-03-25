@@ -548,6 +548,8 @@ class Job
      */
     public function preUpload()
     {
+        $this->setUpdatedAt(new \DateTime('now'));
+
         if (null !== $this->file) {
             // do whatever you want to generate a unique name
             $this->logo = uniqid().'.'.$this->file->guessExtension();
