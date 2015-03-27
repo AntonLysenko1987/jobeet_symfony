@@ -4,7 +4,6 @@ use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
 
 class JobControllerTest extends WebTestCase
 {
-    private $client;
 
     public function getMostRecentProgrammingJob()
     {
@@ -73,13 +72,17 @@ class JobControllerTest extends WebTestCase
 //    }
     public function testJobForm()
     {
-        $this -> client = static::createClient();
-        $this->client->followRedirects(true);
-        $crawler = $this->client->request('GET', '/job/new');
-        $this->assertEquals('Ens\JobeetBundle\Controller\JobController::newAction', $this->client->getRequest()->attributes->get('_controller'));
+        $client = static::createClient();
+        $client->followRedirects();
+
+        $crawler = $client->request('GET', '/job/new');
+
+
+
+        $this->assertEquals('Ens\JobeetBundle\Controller\JobController::newAction', $client->getRequest()->attributes->get('_controller'));
 
         $form = $crawler->selectButton('Preview your job')->form(array(
-            'job[company]'      => 'Sensio Labs',
+            'job[company]'      => 'Sensio Labsxxx',
             'job[url]'          => 'http://www.sensio.com/',
             'job[file]'         => __DIR__.'/../../../../../web/bundles/ensjobeet/images/sensio-labs.gif',
             'job[position]'     => 'Developer',
@@ -90,11 +93,11 @@ class JobControllerTest extends WebTestCase
             'job[is_public]'    => false,
         ));
 
-        $crawler=$this->client->submit($form);
-        $this->assertEquals('Ens\JobeetBundle\Controller\JobController::createAction', $this->client->getRequest()->attributes->get('_controller'));
+        $client->submit($form);
+        $this->assertEquals('Ens\JobeetBundle\Controller\JobController::createAction', $client->getRequest()->attributes->get('_controller'));
 
-        //$crawler=$this->client->followRedirect();
-        $this->assertEquals('Ens\JobeetBundle\Controller\JobController::previewAction', $this->client->getRequest()->attributes->get('_controller'));
+        //$client->followRedirect();
+        //$this->assertEquals('Ens\JobeetBundle\Controller\JobController::newAction', $client->getResponse()->headers);
 
     }
 }
