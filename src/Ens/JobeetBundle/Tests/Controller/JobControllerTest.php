@@ -73,18 +73,13 @@ class JobControllerTest extends WebTestCase
     public function testJobForm()
     {
         $client = static::createClient();
-        $client->followRedirects();
-
+        //$client->followRedirects();
         $crawler = $client->request('GET', '/job/new');
-
-
-
         $this->assertEquals('Ens\JobeetBundle\Controller\JobController::newAction', $client->getRequest()->attributes->get('_controller'));
 
         $form = $crawler->selectButton('Preview your job')->form(array(
-            'job[company]'      => 'Sensio Labsxxx',
+            'job[company]'      => 'Sensio Labs',
             'job[url]'          => 'http://www.sensio.com/',
-            'job[file]'         => __DIR__.'/../../../../../web/bundles/ensjobeet/images/sensio-labs.gif',
             'job[position]'     => 'Developer',
             'job[location]'     => 'Atlanta, USA',
             'job[description]'  => 'You will work with symfony to develop websites for our customers.',
@@ -96,9 +91,55 @@ class JobControllerTest extends WebTestCase
         $client->submit($form);
         $this->assertEquals('Ens\JobeetBundle\Controller\JobController::createAction', $client->getRequest()->attributes->get('_controller'));
 
-        //$client->followRedirect();
-        //$this->assertEquals('Ens\JobeetBundle\Controller\JobController::newAction', $client->getResponse()->headers);
+       // $crawler=$client->followRedirect();
+       // $this->assertEquals('Ens\JobeetBundle\Controller\JobController::previewAction',  $client->getRequest()->attributes->get('_controller'));
+    }
+    public function createJob($values = array(), $publish = false)
+    {
+        $client = static::createClient();
+        $crawler = $client->request('GET', '/job/new');
+        $form = $crawler->selectButton('Preview your job')->form(array_merge(array(
+            'job[company]'      => 'Sensio Labs',
+            'job[url]'          => 'http://www.sensio.com/',
+            'job[position]'     => 'Developer',
+            'job[location]'     => 'Atlanta, USA',
+            'job[description]'  => 'You will work with symfony to develop websites for our customers.',
+            'job[how_to_apply]' => 'Send me an email',
+            'job[email]'        => 'for.a.job@example.com',
+            'job[is_public]'    => false,
+        ), $values));
 
+        $client->submit($form);
+        $client->followRedirect();
+
+        if($publish) {
+            $crawler = $client->getCrawler();
+            $form = $crawler->selectButton('Publish')->form();
+            $client->submit($form);
+            $client->followRedirect();
+        }
+
+        return $client;
+    }
+
+    public function getJobByPosition($position)
+    {
+        $kernel = static::createKernel();
+        $kernel->boot();
+        $em = $kernel->getContainer()->get('doctrine.orm.entity_manager');
+
+        $query = $em->createQuery('SELECT j from EnsJobeetBundle:Job j WHERE j.position = :position');
+        $query->setParameter('position', $position);
+        $query->setMaxResults(1);
+        return $query->getSingleResult();
+    }
+
+    public function testEditJob()
+    {
+        $client = $this->createJob(array('job[position]' => 'FOO3'), true);
+        $crawler = $client->getCrawler();
+        $crawler = $client->request('GET', sprintf('/job/%s/edit', $this->getJobByPosition('FOO3')->getToken()));
+        $this->assertTrue(404 === $client->getResponse()->getStatusCode());
     }
 }
 ?>
